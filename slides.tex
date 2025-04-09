@@ -1,0 +1,350 @@
+\documentclass[table]{beamer}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{basicstyle=\footnotesize\ttfamily,
+        keywordstyle=\footnotesize\color{blue}\ttfamily}
+
+\lstdefinestyle{tssg}{
+  %belowcaptionskip=1\baselineskip,
+  %breaklines=true,
+  %frame=L,
+  %xleftmargin=\parindent,
+  showstringspaces=false,
+  keywordstyle=\bfseries\color{green!40!black},
+  morekeywords={let, node, attr, edge, "=", "->"},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+
+\lstdefinestyle{yaml}{
+  keywordstyle=\bfseries\color{green!40!black},
+  morekeywords={nodes, edges, filepaths, name, kind, source, sink},
+  % identifierstyle=\color{cyan},
+}
+ 
+\usetheme{Madrid}
+%\usecolortheme{default}
+\usecolortheme{beaver}
+\date[4 April 2025]{}
+
+\title{Lessons learned from implementing a language-agnostic dependency graph parser}
+%\subtitle{ENASE 2025}
+\author[F.~Refolli \and ~D.~Sas \and F.~Arcelli~Fontana]{\textbf{Francesco~Refolli} \and ~Darius~Sas \and Francesca~Arcelli~Fontana}
+%\logo{\includegraphics[height=1cm]{logo_unimib.pdf}}
+\titlegraphic{\includegraphics[height=3cm]{logo_unimib.pdf}\hspace*{4.75cm}~\includegraphics[height=3cm]{enase_logo.jpg}}
+
+\newcommand{\putimage}[2] {
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=#2\linewidth]{#1}
+	\end{figure}
+}
+
+\newcommand{\putimagecouple}[4] {
+  \begin{figure}[!htb]
+    \centering
+    \begin{minipage}{0.45\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{#1}
+      \caption{#2}
+    \end{minipage}
+    \hspace{0.25cm}
+    \begin{minipage}{0.45\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{#3}
+      \caption{#4}
+    \end{minipage}
+  \end{figure}
+}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Introduction}
+\begin{frame}
+  \centering
+  \huge Introduction
+\end{frame}
+
+\begin{frame}
+  \frametitle{How do software analysis tools work?}
+  \putimage{images/d2/software-analysis-tools.png}{0.99}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A tedious detail ...}
+  Not every project is written in X language!
+  \putimage{images/d2/the-tedious-detail-1.png}{0.99}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A tedious detail ...}
+  Some projects are even blends of languages!
+  \putimage{images/d2/the-tedious-detail-2.png}{0.99}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A "naive" solution}
+  \putimage{images/d2/naive-solution.png}{0.99}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other techniques}
+  \putimage{images/d2/techniques.png}{0.99}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What we want}
+  A few key principles:
+  \begin{itemize}
+    \item An efficient intermediate representation
+    \item Avoid source code / syntax tree translations
+    \item Avoid language-specific dependencies
+    \item A Maintainable, extensible and generic approach
+    \item Easily add support for a new language
+    \item Build it right and built it fast
+  \end{itemize}
+\end{frame}
+
+\section{The tools}
+\begin{frame}
+  \centering
+  \huge The tools
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Tree Sitter}
+  \begin{columns}
+    \begin{column}{0.50\textwidth}
+      \begin{itemize}
+        \item Is a parser generator
+				\item Parses code into a Concrete Syntax Tree (CST)
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \lstinputlisting[language=Java]{listings/technology-example.java}
+    \end{column}
+  \end{columns}
+  \putimage{images/plain/tree-sitter-example.png}{0.99}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Stack Graphs}
+  \begin{columns}
+    \begin{column}{0.50\textwidth}
+      \begin{itemize}
+        \item Composable graph
+        \item Represents identifiers and scopes of source code
+        \item Enables language agnostic reference resolution
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \lstinputlisting[language=Java]{listings/technology-example.java}
+    \end{column}
+  \end{columns}
+  \putimage{images/d2/stack-graph-example.png}{0.99}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Tree Sitter Stack Graphs}
+  \begin{itemize}
+    \item A "TSSG" Grammar is composed of pairs
+    \item Each pair matches a section of the CST with some procedural code
+    \item Definition of nodes, edges and labels
+  \end{itemize}
+  \lstinputlisting[style=tssg]{listings/tssg-pair-example.txt}
+\end{frame}
+
+\section{Building the dependency graph}
+\begin{frame}
+  \centering
+  \huge Building the dependency graph
+\end{frame}
+
+\begin{frame}
+  \frametitle{How is the Stack Graph built?}
+  \begin{itemize}
+    \item Definition identifiers get a \textit{pop} node
+    \item Reference identifiers get a \textit{push} node
+    \item \textit{Scope} nodes appear at various levels to allow navigation
+    \item Chaining nodes with edges allow to resolve complex references. Examples:
+      \begin{itemize}
+        \item "$java \leftarrow util \leftarrow Scanner$" defines a sequential search for its identifies.
+        \item "$point \leftarrow x$" employs type resolution and field access.
+      \end{itemize}
+    \item Try to avoid cycles to reduce reference resolution time
+    \item Apply \textit{refkind/defkind} labels to capture fine-grain relationships and component types
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How are references resolved?}
+  \putimage{images/mmd/reference-resolution-algorithm.png}{0.60}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How is the dependency graph built?}
+  \begin{itemize}
+    \item Depth-first visit of the Stack Graph from root
+    \item Add each definition node to the component graph
+    \item Keep track of structural dependencies
+    \item Decorate the graph with references resolved previously
+    \item Serialization with JSON, GraphML ... etc
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Another basic example / 1}
+  \lstinputlisting[language=Java]{listings/dependency-graph-example.java}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Another basic example / 2}
+  \putimage{images/d2/dependency-graph-example.png}{0.99}
+\end{frame}
+
+\section{Evaluation}
+\begin{frame}
+  \centering
+  \huge Evaluation
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How is the prototype evaluated?}
+  Describe assertion on files, nodes and edges
+  \begin{columns}
+    \begin{column}{0.64\textwidth}
+      \lstinputlisting[style=yaml]{listings/policy-test-example.yml}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{itemize}
+        \item node types: class, function, enum ...
+        \item edge types: definedBy, includes, usesType, calls ...
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% TODO: aggiungere una slide su Arcan con il logo di Arcan e il diagramma dei componenti che hai messo nell'articolo
+
+\begin{frame}
+  \frametitle{The tool Arcan}
+  \putimage{images/plain/arcanDepgraph.png}{0.70}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Pruijt et al's benchmark}
+	% TODO: aggiungere la fonte del Benchmark
+  \putimage{images/py/prototype-arcan-pruijt.png}{0.80}
+
+	\footnote{The accuracy of dependency analysis in static architecture compliance checking, Pruijt et Al, Softw. Pract. Exp. 2017}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Running on real-world scenarios}
+    \center
+    \begin{tabular}{|l l c r|}
+      \hline
+      \textbf{Project} & \textbf{Language} & \textbf{Version} & \textbf{Size (in LOC)} \\
+      \hline
+      JUnit4 & Java & 4 & 30K \\
+      \hline
+      JUnit5 & Java & 5 & 100K \\
+      \hline
+      ANTLR & Java & 4 & 180K \\
+      \hline
+      Fastjson & Java & 1 & 50K \\
+      \hline
+    \end{tabular}
+    \center
+    \begin{tabular}{|l|l|l|l|l|}
+        \hline
+        \textbf{Project} & \textbf{Tool} & \textbf{Min} & \textbf{Max} & \textbf{Mean execution time} \\ \hline
+        \hline
+        \rowcolor[HTML]{EED49F} 
+        JUnit4   & prototype & 65,82  & 69,07  & 65,88     \\ \hline
+        \rowcolor[HTML]{A6DA95} 
+        JUnit4   & Arcan     & 13,850 & 17,079 & 14,611    \\ \hline
+        \rowcolor[HTML]{EED49F} 
+        JUnit5   & prototype & 132,87 & 134,75 & 134,44    \\ \hline
+        \rowcolor[HTML]{A6DA95} 
+        JUnit5   & Arcan     & 42,542 & 47,613 & 44,186    \\ \hline
+        \rowcolor[HTML]{EED49F} 
+        ANTLR    & prototype & 171,65 & 175,49 & 172,64    \\ \hline
+        \rowcolor[HTML]{A6DA95} 
+        ANTLR    & Arcan     & 19,222 & 20,140 & 19,691    \\ \hline
+        \rowcolor[HTML]{ED8796} 
+        Fastjson & prototype & N/A    & N/A    & N/A       \\ \hline
+        \rowcolor[HTML]{A6DA95} 
+        Fastjson & Arcan     & 66,932 & 71,094 & 69,071    \\ \hline
+    \end{tabular}
+\end{frame}
+
+\section{Lessons learned}
+\begin{frame}
+  \centering
+  \huge Lessons learned
+\end{frame}
+
+\begin{frame}
+  \frametitle{Advantages}
+  \centering
+  \begin{itemize}
+    \item Reference resolution and dependency inference are not tied to third party dependencies
+    \item Achieves decent precision (comparable with the tool Arcan)
+    \item Approach exportable to other languages (ex: Python, C++)
+    \item Writing a TSSG grammar is easier than implementing a language frontend \\
+    (but it can be harder than writing bindings to those)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shortcomings}
+  \centering
+  \begin{itemize}
+    \item Poor performance
+    \item Generally large Stack Graphs
+    \item Lack of support for dependencies to external libraries
+    \item Limited resolution for complex references
+    \item The TSSG DSL is fairly limited (can lead to labeling conflicts)
+    \item TSSG Grammars are long and not easy to read
+  \end{itemize}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}
+  \centering
+  \huge Conclusion
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conclusions}
+  Summarizing:
+  \begin{itemize}
+    \item The presented approach works for small-to-medium projects
+    \item Further work is needed to scale project sizes
+  \end{itemize}
+
+  \vspace{0.9cm}
+
+  Future work:
+  \begin{itemize}
+    \item Experiment with automatic graph construction
+    \item Build abstractions upon Tree Sitter CSTs
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \centering
+  \huge Thank you for the attention
+\end{frame}
+
+\end{document}

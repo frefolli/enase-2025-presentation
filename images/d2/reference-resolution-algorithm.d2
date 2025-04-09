@@ -1,0 +1,25 @@
+direction: down
+
+A0: "Start from reference node R"
+A1: "SymbolStack is empty"
+A2: "visit(N)"
+A3: "SymbolStack.push(symbol(N))"
+A4: "SymbolStack.top() == symbol(N)" {shape: diamond}
+A5: "SymbolStack.pop()"
+A6: "SymbolStack.empty()" {shape: diamond}
+A7: "for each M in neighbour(N)"
+accept: "ACCEPT"
+drop: "DROP"
+
+A0 -> A1
+A1 -> A2: "N <- R"
+A2 -> A3: "isPush(N)"
+A2 -> A4: "isPop(N)"
+A4 -> A5: "Yes"
+A4 -> drop: "No"
+A5 -> A6
+A6 -> A7: "No"
+A3 -> A7: "No"
+A7 -> A2: "N <- M"
+A6 -> accept: "Yes"
+A2 -> A7: "isScope(N)"

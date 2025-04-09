@@ -1,0 +1,79 @@
+direction: right
+
+classes: {
+  a-root: {
+    style:  {
+      fill: "#7ee67e"
+      stroke: "#000000"
+    }
+  }
+  a-def: {
+    style:   {
+      fill: "#e88797"
+      stroke: "#000000"
+    }
+  }
+  a-ref: {
+    style:   {
+      fill: "#8d85e6"
+      stroke: "#000000"
+    }
+  }
+  a-scope: {
+    style: {
+      fill: "#e6d88c"
+      stroke: "#000000"
+    }
+  }
+}
+
+n1: "ROOT_NODE" {class: a-root}
+# n2: "" {class: a-scope}
+# n3: "" {class: a-scope}
+n4: "" {class: a-scope}
+n5: "" {class: a-scope}
+# n6: "" {class: a-scope}
+# n7: "" {class: a-scope}
+n8: "A" {class: a-def}
+n9: "A" {class: a-ref}
+# n10: "" {class: a-scope}
+n11: "" {class: a-scope}
+n12: "this" {class: a-ref}
+n13: "" {class: a-scope}
+n14: "" {class: a-scope}
+# n15: "" {class: a-scope}
+# n16: "" {class: a-scope}
+# n17: "" {class: a-scope}
+# n18: "" {class: a-scope}
+# n19: "" {class: a-scope}
+n20: "main" {class: a-def}
+n21: "main" {class: a-ref}
+# n22: "" {class: a-scope}
+# n23: "" {class: a-scope}
+# n24: "" {class: a-scope}
+# n25: "" {class: a-scope}
+
+n1 -> n4
+# n3 -> n1
+#n4 -> n6
+n5 -> n1
+n4 -> n8
+# n7 -> n5
+n8 -> n11
+n9 -> n5
+n13 -> n5
+n13 -> n9
+n11 -> n12
+n11 -> n14
+n12 -> n14
+# n13 -> n10
+n14 -> n20
+# n17 -> n13
+# n19 -> n13
+n20 -> n13
+# n20 -> n23
+# n20 -> n25
+n21 -> n13
+# n22 -> n13
+# n24 -> n13
+# n24 -> n21

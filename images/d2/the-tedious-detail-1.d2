@@ -1,0 +1,84 @@
+direction: down
+classes: {
+  server: {
+    shape: image
+    icon: ../icons/server.svg
+  }
+  c: {
+    shape: image
+    icon: ../icons/c.svg
+  }
+  csharp: {
+    shape: image
+    icon: ../icons/csharp.svg
+  }
+  cpp: {
+    shape: image
+    icon: ../icons/cpp.svg
+  }
+  python: {
+    shape: image
+    icon: ../icons/python.svg
+  }
+  java: {
+    shape: image
+    icon: ../icons/java.svg
+  }
+  rust: {
+    shape: image
+    icon: ../icons/rust.svg
+  }
+  js: {
+    shape: image
+    icon: ../icons/js.svg
+  }
+  ruby: {
+    shape: image
+    icon: ../icons/ruby.svg
+  }
+  go: {
+    shape: image
+    icon: ../icons/go.svg
+  }
+  lua: {
+    shape: image
+    icon: ../icons/lua.svg
+  }
+  fortran: {
+    shape: image
+    icon: ../icons/fortran.svg
+  }
+  asm: {
+    shape: image
+    icon: ../icons/asm.svg
+  }
+}
+
+tool: "Analysis tool" {class: server}
+
+project_c: "Project A" {class: c}
+project_cpp: "Project B" {class: cpp}
+project_python: "Project C" {class: python}
+project_java: "Project D" {class: java}
+project_rust: "Project E" {class: rust}
+project_js: "Project F" {class: js}
+project_ruby: "Project G" {class: ruby}
+project_go: "Project H" {class: go}
+project_lua: "Project I" {class: lua}
+project_fortran: "Project J" {class: fortran}
+project_asm: "Project K" {class: asm}
+project_csharp: "Project L" {class: csharp}
+
+project_c -- tool
+project_cpp -- tool
+project_csharp -- tool
+project_python -- tool
+project_java -- tool
+project_rust -- tool
+
+tool -- project_js
+tool -- project_ruby
+tool -- project_go
+tool -- project_lua
+tool -- project_fortran
+tool -- project_asm

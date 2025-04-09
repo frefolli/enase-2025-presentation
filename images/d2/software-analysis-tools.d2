@@ -1,0 +1,27 @@
+direction: right
+classes: {
+  function: {
+    shape: image
+    icon: ../icons/function.png
+  }
+  file: {
+    shape: image
+    icon: ../icons/file.svg
+  }
+  gears: {
+    shape: image
+    icon: ../icons/gears.png
+  }
+  report: {
+    shape: image
+    icon: ../icons/report.svg
+  }
+}
+
+source_code: "Source code" {class: file}
+definitions: "Definitions" {class: function}
+extraction_analysis: "Extraction" {class: gears}
+dependency_analysis: "Analysis" {class: gears}
+report: "Report" {class: report}
+
+source_code -> extraction_analysis -> definitions -> dependency_analysis -> report

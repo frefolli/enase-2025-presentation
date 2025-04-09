@@ -1,0 +1,24 @@
+flowchart TD
+    A0["Start from reference node R"]
+    A1["SymbolStack is empty"]
+    A2["visit(N)"]
+    A3["SymbolStack.push(symbol(N))"]
+    A4{{"SymbolStack.top() == symbol(N)"}}
+    A5["SymbolStack.pop()"]
+    A6{{"SymbolStack.empty()"}}
+    A7["for each M in neighbours(N)"]
+    accept["ACCEPT"]
+    drop["DROP"]
+
+    A0 --> A1
+    A1 -->|N <- R| A2
+    A2 -->|"isPush(N)"| A3
+    A2 -->|"isPop(N)"| A4
+    A4 -->|Yes| A5
+    A4 -->|No| drop
+    A5 --> A6
+    A6 -->|No| A7
+    A3 -->|No| A7
+    A7 -->|N <- M| A2
+    A6 -->|Yes| accept
+    A2 -->|"isScope(N)"| A7

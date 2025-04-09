@@ -1,0 +1,9 @@
+Dependency,Arcan,Prototype,Real
+accessField,7,6,11
+calls,3,1,6
+castsType,2,2,2
+includes,0,1,1
+isChildOf,2,2,2
+isImplementationOf,1,1,1
+throwsType,1,1,1
+usesType,8,8,8

@@ -1,0 +1,12 @@
+(field_access object: (_)@object field: (_)@field)@this {
+  node @this.scope
+  node @this.pop_start
+  node @this.pop_end
+  edge @field.push_end -> @object.push_start
+  let @this.push_start = @field.push_start
+  let @this.push_end = @object.push_end
+  edge @this.push_end -> @this.scope
+  edge @this.pop_start -> @this.push_start
+  attr (@field.push_start)
+    is_reference, refkind = "accessField"
+}

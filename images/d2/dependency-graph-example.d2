@@ -1,0 +1,43 @@
+direction: right
+
+A: "class A" {
+  class: class
+}
+
+A_main: "fn A.main" {
+  class: function
+}
+
+B: "class B" {
+  class: class
+}
+
+B_main: "fn B.main" {
+  class: function
+}
+
+C: "class C" {
+  class: class
+}
+
+C_main: "fn C.main" {
+  class: function
+}
+
+B_main -> B: "definedBy" {
+}
+
+B_main -> C_main: "calls" {
+}
+
+C_main -> C: "definedBy" {
+}
+
+C_main -> A_main: "calls" {
+}
+
+A_main -> A: "definedBy" {
+}
+
+A_main -> B_main: "calls" {
+}
